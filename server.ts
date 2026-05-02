@@ -133,17 +133,6 @@ async function startServer() {
   const app = express();
   const PORT = 3000;
 
-  const isProduction = process.env.NODE_ENV === "production";
-
-  const setAuthCookie = (res, token) => {
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: isProduction,
-      sameSite: isProduction ? "none" : "lax",
-    });
-  };
-
-
   app.use(express.json({ limit: '50mb' }));
   app.use(cookieParser());
 
@@ -189,7 +178,7 @@ async function startServer() {
       await user.save();
 
       const token = jwt.sign({ userId: user._id }, JWT_SECRET, { expiresIn: "7d" });
-      setAuthCookie(res, token);
+      res.cookie("token", token, { httpOnly: true, secure: true, sameSite: "none" });
       
       res.status(201).json({ user: { id: user._id, fullName, username, email } });
     } catch (error) {
@@ -207,7 +196,7 @@ async function startServer() {
       }
 
       const token = jwt.sign({ userId: user._id }, JWT_SECRET, { expiresIn: "7d" });
-      setAuthCookie(res, token);
+      res.cookie("token", token, { httpOnly: true, secure: true, sameSite: "none" });
       
       res.json({ 
         user: { 
